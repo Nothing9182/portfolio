@@ -151,7 +151,7 @@
                         <a href=""><i class="fa-brands fa-linkedin"></i></a>
                         <a href=""><i class="fa-brands fa-github"></i></a>
                     </div>
-                    <a href=""class="btn btn2">Download CV</a>
+                    <a href="https://drive.google.com/file/d/1v74nXxTt0BOlDbr3luqGSzyQl0PYPHV0/view?usp=sharing" download="Lokesh-CV.pdf" class="btn btn2">Download CV</a>
                 </div>
                 <div class="contact-right">
                     <form name="submit-to-google-sheet">
@@ -193,24 +193,31 @@
 </script>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzRnm4CtAFy8KvoT1x_hxe9OOoETR_i3QLYqXUeGeBc82dfme01zburNUdc7FOLQ3sN/exec'
-    const form = document.forms['submit-to-google-sheet']
-    const msg = document.getElementById("msg")
-    form.addEventListener('submit', e => {
-      e.preventDefault()
-      fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-        .then(response => {
-            msg.innerHTML = "Message sent successfully"
-            setTimeout(function(){
-                msg.innerHTML = ""
-            },1000)
-            form.reset()
-        })
-        .catch(error => console.error('Error!', error.message))
-    })
-  </script>
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbzgSHVYpcZan7pgz90WcafDu2Grmih_DvRBDJBxUihMyyFBoFW4_YjmkvbLkaRQv3gcMw/exec'
+  const form = document.forms['submit-to-google-sheet']
+  const msg = document.getElementById("msg")
+
+  form.addEventListener('submit', e => {
+    e.preventDefault()
+
+    // Show message immediately
+    msg.innerHTML = "Submitting... please wait"
+
+    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+      .then(response => {
+        msg.innerHTML = " Message sent successfully!"
+        setTimeout(() => { msg.innerHTML = "" }, 1000)
+        form.reset()
+      })
+      .catch(error => {
+        msg.innerHTML = " Something went wrong. Try again!"
+        console.error('Error!', error.message)
+      })
+  })
+</script>
 
 </body>
 
 </html>
+
 
