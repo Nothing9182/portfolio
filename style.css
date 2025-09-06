@@ -69,6 +69,10 @@ nav ul li a:hover::after{
 .header-text h1{
     font-size: 50px;
     margin-top: 20px;
+	color: black;
+}
+.header-text p{
+	color: black;
 }
 
 .header-text h1 span{
@@ -412,3 +416,4 @@ nav .fa-solid{
     display: block;
 
 }
+
