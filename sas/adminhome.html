@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scam Alert System - Admin</title>
   <style>
-    /* (same CSS as before, unchanged for UI look) */
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:'Poppins',sans-serif;background:#1a1a1a;color:#e0e0e0;overflow-x:hidden;}
     header{text-align:center;padding:40px 20px;background:linear-gradient(145deg,#6a6e73,#44484d);color:#fff;border-radius:15px;box-shadow:0 4px 8px rgba(0,0,0,.3);margin-bottom:30px;position:relative;}
@@ -150,93 +149,149 @@
   </footer>
 
   <script>
-    // ✅ Local JS data (instead of backend)
-    let scams = [
-      {id:1, category:"online", title:"Fake Shopping Site", date:"01/05/2025", description:"Scammers create fake online shops.", precautions:["Check URL","Use trusted sites"], links:["https://example.com"]},
-      {id:2, category:"phone", title:"Phishing Call", date:"01/20/2025", description:"Scammers impersonate banks.", precautions:["Don't share OTP","Verify number"], links:["https://another.com"]}
-    ];
     let editingScamId = null;
 
-    function formatDateForDisplay(dateString){
-      const [m,d,y] = dateString.split("/");
-      return new Date(`${y}-${m}-${d}`).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+    function formatDateForDisplay(dateString) {
+      const [m, d, y] = dateString.split("/");
+      return new Date(`${y}-${m}-${d}`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     }
 
-    function showModal(scam){
-      document.getElementById("modalDetails").innerHTML=`
+    function showModal(scam) {
+      document.getElementById("modalDetails").innerHTML = `
         <h2>${scam.title}</h2>
         <p><strong>Date:</strong> ${formatDateForDisplay(scam.date)}</p>
         <p>${scam.description}</p>
         <h3>Precautions:</h3>
-        <ul>${scam.precautions.map(p=>`<li>${p}</li>`).join("")}</ul>
+        <ul>${scam.precautions.map(p => `<li>${p}</li>`).join("")}</ul>
         <h3>Links:</h3>
-        <ul>${scam.links.map(l=>`<li><a href="${l}" target="_blank">${l}</a></li>`).join("")}</ul>
+        <ul>${scam.links.map(l => `<li><a href="${l}" target="_blank">${l}</a></li>`).join("")}</ul>
       `;
-      document.getElementById("scamModal").style.display="block";
+      document.getElementById("scamModal").style.display = "block";
     }
-    function closeModal(){document.getElementById("scamModal").style.display="none";}
 
-    function populateScams(category="all"){
-      const list=document.querySelector(".scams-list");list.innerHTML="";
-      const select=document.getElementById("select-scam");select.innerHTML='<option value="">Select Scam</option>';
-      scams.filter(s=>category==="all"||s.category===category).forEach(s=>{
-        let div=document.createElement("div");div.className="scam";
-        div.innerHTML=`<div class="scam-title">${s.title}</div><div class="scam-date">${formatDateForDisplay(s.date)}</div>`;
-        div.onclick=()=>showModal(s);list.appendChild(div);
-        let opt=document.createElement("option");opt.value=s.id;opt.textContent=s.title;select.appendChild(opt);
+    function closeModal() {
+      document.getElementById("scamModal").style.display = "none";
+    }
+
+    function populateScams(category = "all") {
+      const scams = JSON.parse(localStorage.getItem("scams")) || [];
+      const list = document.querySelector(".scams-list");
+      list.innerHTML = "";
+      const select = document.getElementById("select-scam");
+      select.innerHTML = '<option value="">Select Scam</option>';
+      scams.filter(s => category === "all" || s.category === category).forEach(s => {
+        let div = document.createElement("div");
+        div.className = "scam";
+        div.innerHTML = `<div class="scam-title">${s.title}</div><div class="scam-date">${formatDateForDisplay(s.date)}</div>`;
+        div.onclick = () => showModal(s);
+        list.appendChild(div);
+        let opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = s.title;
+        select.appendChild(opt);
       });
     }
 
-    function addScam(){
-      const cat=document.getElementById("add-scam-category").value;
-      const title=document.getElementById("add-scam-title").value;
-      const date=document.getElementById("add-scam-date").value;
-      const desc=document.getElementById("add-scam-description").value;
-      if(!title||!date||!desc){alert("Fill all fields");return;}
-      const prec=document.getElementById("add-scam-precautions").value.split(",").map(p=>p.trim()).filter(Boolean);
-      const links=document.getElementById("add-scam-links").value.split(",").map(p=>p.trim()).filter(Boolean);
-      let newId=scams.length?Math.max(...scams.map(s=>s.id))+1:1;
-      scams.push({id:newId,category:cat,title, date:new Date(date).toLocaleDateString("en-US"),description:desc,precautions:prec,links});
+    function addScam() {
+      const cat = document.getElementById("add-scam-category").value;
+      const title = document.getElementById("add-scam-title").value;
+      const date = document.getElementById("add-scam-date").value;
+      const desc = document.getElementById("add-scam-description").value;
+      if (!title || !date || !desc) {
+        alert("Fill all fields");
+        return;
+      }
+      const prec = document.getElementById("add-scam-precautions").value.split(",").map(p => p.trim()).filter(Boolean);
+      const links = document.getElementById("add-scam-links").value.split(",").map(p => p.trim()).filter(Boolean);
+      const scams = JSON.parse(localStorage.getItem("scams")) || [];
+      let newId = scams.length ? Math.max(...scams.map(s => s.id)) + 1 : 1;
+      scams.push({ id: newId, category: cat, title, date: new Date(date).toLocaleDateString("en-US"), description: desc, precautions: prec, links });
+      localStorage.setItem("scams", JSON.stringify(scams));
       alert("Scam added!");
       populateScams();
     }
 
-    function deleteScam(){
-      let id=document.getElementById("select-scam").value;if(!id){alert("Select scam");return;}
-      scams=scams.filter(s=>s.id!=id);alert("Deleted!");populateScams();
-    }
-
-    function editScamForm(){
-      let id=document.getElementById("select-scam").value;if(!id){alert("Select scam");return;}
-      editingScamId=id;let s=scams.find(x=>x.id==id);
-      document.getElementById("edit-scam-category").value=s.category;
-      document.getElementById("edit-scam-title").value=s.title;
-      document.getElementById("edit-scam-date").value=new Date(s.date).toISOString().split("T")[0];
-      document.getElementById("edit-scam-description").value=s.description;
-      document.getElementById("edit-scam-precautions").value=s.precautions.join(", ");
-      document.getElementById("edit-scam-links").value=s.links.join(", ");
-      document.getElementById("edit-form").style.display="block";
-    }
-    function updateScam(){
-      let s=scams.find(x=>x.id==editingScamId);
-      s.category=document.getElementById("edit-scam-category").value;
-      s.title=document.getElementById("edit-scam-title").value;
-      s.date=new Date(document.getElementById("edit-scam-date").value).toLocaleDateString("en-US");
-      s.description=document.getElementById("edit-scam-description").value;
-      s.precautions=document.getElementById("edit-scam-precautions").value.split(",").map(p=>p.trim());
-      s.links=document.getElementById("edit-scam-links").value.split(",").map(p=>p.trim());
-      alert("Updated!");
-      document.getElementById("edit-form").style.display="none";editingScamId=null;
+    function deleteScam() {
+      let id = document.getElementById("select-scam").value;
+      if (!id) {
+        alert("Select scam");
+        return;
+      }
+      let scams = JSON.parse(localStorage.getItem("scams")) || [];
+      scams = scams.filter(s => s.id != id);
+      localStorage.setItem("scams", JSON.stringify(scams));
+      alert("Deleted!");
       populateScams();
     }
-    function cancelEdit(){document.getElementById("edit-form").style.display="none";editingScamId=null;}
 
-    function filterScams(cat){document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));event.target.classList.add("active");populateScams(cat);}
-    function searchScams(){let t=document.getElementById("search-box").value.toLowerCase();const list=document.querySelector(".scams-list");list.innerHTML="";scams.filter(s=>s.title.toLowerCase().includes(t)||s.description.toLowerCase().includes(t)).forEach(s=>{let d=document.createElement("div");d.className="scam";d.innerHTML=`<div class="scam-title">${s.title}</div><div class="scam-date">${formatDateForDisplay(s.date)}</div>`;d.onclick=()=>showModal(s);list.appendChild(d);});}
+    function editScamForm() {
+      let id = document.getElementById("select-scam").value;
+      if (!id) {
+        alert("Select scam");
+        return;
+      }
+      editingScamId = id;
+      let scams = JSON.parse(localStorage.getItem("scams")) || [];
+      let s = scams.find(x => x.id == id);
+      document.getElementById("edit-scam-category").value = s.category;
+      document.getElementById("edit-scam-title").value = s.title;
+      document.getElementById("edit-scam-date").value = new Date(s.date).toISOString().split("T")[0];
+      document.getElementById("edit-scam-description").value = s.description;
+      document.getElementById("edit-scam-precautions").value = s.precautions.join(", ");
+      document.getElementById("edit-scam-links").value = s.links.join(", ");
+      document.getElementById("edit-form").style.display = "block";
+    }
 
-    function logout(){alert("Logged out!");window.location.href="saslogin.html";}
+    function updateScam() {
+      let scams = JSON.parse(localStorage.getItem("scams")) || [];
+      let s = scams.find(x => x.id == editingScamId);
+      s.category = document.getElementById("edit-scam-category").value;
+      s.title = document.getElementById("edit-scam-title").value;
+      s.date = new Date(document.getElementById("edit-scam-date").value).toLocaleDateString("en-US");
+      s.description = document.getElementById("edit-scam-description").value;
+      s.precautions = document.getElementById("edit-scam-precautions").value.split(",").map(p => p.trim());
+      s.links = document.getElementById("edit-scam-links").value.split(",").map(p => p.trim());
+      localStorage.setItem("scams", JSON.stringify(scams));
+      alert("Updated!");
+      document.getElementById("edit-form").style.display = "none";
+      editingScamId = null;
+      populateScams();
+    }
 
-    document.addEventListener("DOMContentLoaded",()=>{populateScams();document.getElementById("search-box").addEventListener("input",searchScams);});
+    function cancelEdit() {
+      document.getElementById("edit-form").style.display = "none";
+      editingScamId = null;
+    }
+
+    function filterScams(cat) {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      event.target.classList.add("active");
+      populateScams(cat);
+    }
+
+    function searchScams() {
+      let t = document.getElementById("search-box").value.toLowerCase();
+      const list = document.querySelector(".scams-list");
+      list.innerHTML = "";
+      const scams = JSON.parse(localStorage.getItem("scams")) || [];
+      scams.filter(s => s.title.toLowerCase().includes(t) || s.description.toLowerCase().includes(t)).forEach(s => {
+        let d = document.createElement("div");
+        d.className = "scam";
+        d.innerHTML = `<div class="scam-title">${s.title}</div><div class="scam-date">${formatDateForDisplay(s.date)}</div>`;
+        d.onclick = () => showModal(s);
+        list.appendChild(d);
+      });
+    }
+
+    function logout() {
+      alert("Logged out!");
+      window.location.href = "index.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      populateScams();
+      document.getElementById("search-box").addEventListener("input", searchScams);
+    });
   </script>
 </body>
 </html>

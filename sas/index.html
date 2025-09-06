@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login & Register</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: #101010;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      gap: 30px;
+    }
+    .container {
+      background: #2a2a2a;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      width: 500px;
+      height: 300px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+      background: #333;
+      color: white;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #FF4081;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:disabled {
+      background: #888;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background: #d9366f;
+    }
+    .toggle, .forgot-password {
+      margin-top: 10px;
+      cursor: pointer;
+      color: #FF4081;
+      font-size: 14px;
+    }
+    @media (max-width: 600px) {
+      body {
+        flex-direction: column;
+        height: auto;
+        padding: 20px;
+      }
+      .container {
+        width: 100%;
+        padding: 20px;
+        height: auto;
+      }
+      h2 { font-size: 20px; }
+      input { font-size: 14px; padding: 8px; }
+      button { font-size: 14px; padding: 10px; }
+      .toggle, .forgot-password { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="authContainer">
+    <h2 id="formTitle">Login</h2>
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button onclick="handleAuth()">Login</button>
+    <p class="forgot-password" onclick="forgotPassword()">Forgot Password?</p>
+    <p class="toggle" onclick="toggleForm()">Don't have an account? Register</p>
+  </div>
+  <div class="container" style="display: none;" id="resetContainer">
+    <h2>Reset Password</h2>
+    <input type="email" id="resetEmail" placeholder="Enter registered email" required>
+    <button onclick="sendOTP()">Send OTP</button>
+    <p class="toggle" onclick="showLogin()">Back to Login</p>
+  </div>
+  <div class="container" style="display: none;" id="otpContainer">
+    <h2>Enter OTP</h2>
+    <input type="text" id="otpInput" placeholder="Enter OTP" required>
+    <button onclick="verifyOTP()">Verify OTP</button>
+  </div>
+  <div class="container" style="display: none;" id="newPasswordContainer">
+    <h2>Set New Password</h2>
+    <input type="password" id="newPassword" placeholder="Enter new password" required>
+    <button onclick="resetPassword()">Reset Password</button>
+  </div>
+  <div class="container">
+    <h2>Admin Login</h2>
+    <input type="text" id="admin-username" placeholder="Username" required>
+    <input type="password" id="admin-password" placeholder="Password" required>
+    <button onclick="handleAdminLogin()">Login</button>
+  </div>
+
+  <script>
+    // Fixed Admin credentials
+    const ADMIN_USER = "admin";
+    const ADMIN_PASS = "admin123";
+
+    // Initialize scams in localStorage if not present
+    if (!localStorage.getItem("scams")) {
+      const initialScams = [
+        {
+          id: 1,
+          category: "online",
+          title: "Fake Shopping Site",
+          date: "01/05/2025",
+          description: "Scammers create fake online shops.",
+          precautions: ["Check URL", "Use trusted sites"],
+          links: ["https://example.com"]
+        },
+        {
+          id: 2,
+          category: "phone",
+          title: "Phishing Call",
+          date: "01/20/2025",
+          description: "Scammers impersonate banks.",
+          precautions: ["Don't share OTP", "Verify number"],
+          links: ["https://another.com"]
+        }
+      ];
+      localStorage.setItem("scams", JSON.stringify(initialScams));
+    }
+
+    // Toggle between login and register forms
+    function toggleForm() {
+      const authContainer = document.getElementById("authContainer");
+      const formTitle = document.getElementById("formTitle");
+      const toggleText = document.querySelector(".toggle");
+      const button = authContainer.querySelector("button");
+
+      if (formTitle.textContent === "Login") {
+        formTitle.textContent = "Register";
+        toggleText.textContent = "Already have an account? Login";
+        button.textContent = "Register";
+      } else {
+        formTitle.textContent = "Login";
+        toggleText.textContent = "Don't have an account? Register";
+        button.textContent = "Login";
+      }
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
+    }
+
+    // Show login form
+    function showLogin() {
+      document.getElementById("authContainer").style.display = "block";
+      document.getElementById("resetContainer").style.display = "none";
+      document.getElementById("otpContainer").style.display = "none";
+      document.getElementById("newPasswordContainer").style.display = "none";
+    }
+
+    // Show reset password form
+    function forgotPassword() {
+      document.getElementById("authContainer").style.display = "none";
+      document.getElementById("resetContainer").style.display = "block";
+    }
+
+    // Handle login and registration
+    function handleAuth() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const formTitle = document.getElementById("formTitle").textContent;
+
+      if (formTitle === "Login") {
+        // Login logic
+        const users = JSON.parse(localStorage.getItem("users")) || [];
+        const user = users.find(u => u.username === username && u.password === password);
+        if (user) {
+          alert("✅ User login successful!");
+          window.location.href = "homepage.html";
+        } else {
+          alert("❌ Invalid username or password!");
+        }
+      } else {
+        // Registration logic
+        const users = JSON.parse(localStorage.getItem("users")) || [];
+        if (users.some(u => u.username === username)) {
+          alert("❌ Username already exists!");
+        } else {
+          users.push({ username, password });
+          localStorage.setItem("users", JSON.stringify(users));
+          alert("✅ Registration successful! Please login.");
+          toggleForm();
+        }
+      }
+    }
+
+    // Handle admin login
+    function handleAdminLogin() {
+      const username = document.getElementById("admin-username").value;
+      const password = document.getElementById("admin-password").value;
+
+      if (username === ADMIN_USER && password === ADMIN_PASS) {
+        alert("✅ Admin login successful!");
+        window.location.href = "adminhome.html";
+      } else {
+        alert("❌ Invalid admin username or password!");
+      }
+    }
+
+    // Simulate sending OTP (for demo purposes)
+    function sendOTP() {
+      const email = document.getElementById("resetEmail").value;
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+      const user = users.find(u => u.email === email);
+
+      if (!email || !user) {
+        alert("❌ Please enter a registered email!");
+        return;
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      localStorage.setItem("resetOTP", otp);
+      localStorage.setItem("resetUser", email);
+      alert(`✅ OTP sent to ${email}! (For demo: OTP is ${otp})`);
+      document.getElementById("resetContainer").style.display = "none";
+      document.getElementById("otpContainer").style.display = "block";
+    }
+
+    // Verify OTP
+    function verifyOTP() {
+      const otp = document.getElementById("otpInput").value;
+      const storedOTP = localStorage.getItem("resetOTP");
+
+      if (otp === storedOTP) {
+        alert("✅ OTP verified!");
+        document.getElementById("otpContainer").style.display = "none";
+        document.getElementById("newPasswordContainer").style.display = "block";
+      } else {
+        alert("❌ Invalid OTP!");
+      }
+    }
+
+    // Reset password
+    function resetPassword() {
+      const newPassword = document.getElementById("newPassword").value;
+      const email = localStorage.getItem("resetUser");
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+
+      const userIndex = users.findIndex(u => u.email === email);
+      if (userIndex !== -1) {
+        users[userIndex].password = newPassword;
+        localStorage.setItem("users", JSON.stringify(users));
+        localStorage.removeItem("resetOTP");
+        localStorage.removeItem("resetUser");
+        alert("✅ Password reset successful! Please login.");
+        showLogin();
+      } else {
+        alert("❌ Error resetting password!");
+      }
+    }
+  </script>
+</body>
+</html>

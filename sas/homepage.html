@@ -47,6 +47,21 @@
     #search-box:focus {
       background-color: #3a3a3a;
     }
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: #FF5252;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .logout-btn:hover {
+      background-color: #e04848;
+    }
     .filters {
       text-align: center;
       margin: 20px auto;
@@ -187,6 +202,7 @@
   <header>
     <h1>Scam Alert System</h1>
     <input type="text" id="search-box" placeholder="Search scams...">
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </header>
 
   <div class="filters">
@@ -210,32 +226,14 @@
   </footer>
 
   <script>
-    // ✅ Hardcoded scams (no backend, no localStorage)
-    const scams = [
-      {
-        title: "Fake Online Shopping Website",
-        date: "03/01/2025",
-        category: "online",
-        description: "Scammers create fake websites that look like trusted e-commerce platforms.",
-        precautions: [
-          "Verify website URL before purchase",
-          "Check reviews before buying",
-          "Avoid deals that look too good"
-        ],
-        links: ["https://consumer.ftc.gov"]
-      },
-      {
-        title: "Lottery Phone Call Scam",
-        date: "02/28/2025",
-        category: "phone",
-        description: "Fraudsters call claiming you’ve won a lottery but ask for upfront fees.",
-        precautions: [
-          "Never share bank details on phone",
-          "Legit lotteries don’t ask for money to claim prize"
-        ],
-        links: ["https://www.usa.gov/stop-scams-frauds"]
-      }
-    ];
+    function formatDateForDisplay(dateString) {
+      const [month, day, year] = dateString.split('/');
+      return new Date(`${year}-${month}-${day}`).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
 
     function filterScams(category) {
       document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -263,6 +261,7 @@
     }
 
     function populateScams(category = 'all') {
+      const scams = JSON.parse(localStorage.getItem("scams")) || [];
       const scamsList = document.querySelector('.scams-list');
       scamsList.innerHTML = '';
 
@@ -289,6 +288,7 @@
       const searchTerm = document.getElementById('search-box').value.trim().toLowerCase();
       const scamsList = document.querySelector('.scams-list');
       scamsList.innerHTML = '';
+      const scams = JSON.parse(localStorage.getItem("scams")) || [];
 
       const filteredScams = scams.filter(scam =>
         scam.title.toLowerCase().includes(searchTerm) ||
@@ -321,13 +321,9 @@
       return text.replace(regex, '<span style="background-color: #FFFF99; color: black;">$1</span>');
     }
 
-    function formatDateForDisplay(dateString) {
-      const [month, day, year] = dateString.split('/');
-      return new Date(`${year}-${month}-${day}`).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-      });
+    function logout() {
+      alert("Logged out!");
+      window.location.href = "index.html";
     }
 
     document.addEventListener('DOMContentLoaded', () => {
